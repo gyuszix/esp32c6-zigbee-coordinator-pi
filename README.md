@@ -57,6 +57,14 @@ C6 from 3.3 V.
 
 ---
 
+### References
+<img width="4032" height="3024" alt="IMG_2009" src="https://github.com/user-attachments/assets/52d6dd1a-a3ea-48f6-ab67-63d27a9283b3" />
+<img width="499" height="513" alt="Screenshot 2026-08-06 at 16 46 17" src="https://github.com/user-attachments/assets/f992d5e3-f7ae-45bb-95e3-3161108d121e" />
+<img width="635" height="1142" alt="Screenshot 2026-08-06 at 19 45 24" src="https://github.com/user-attachments/assets/4b8aac27-7ef5-4afb-ba1b-599821c982f4" />
+
+
+---
+
 ## Wiring
 
 **Use the pins labelled GPIO22 and GPIO23, not the ones silkscreened TX and RX.**
