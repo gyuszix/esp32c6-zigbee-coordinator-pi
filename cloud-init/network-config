@@ -1,0 +1,21 @@
+# Goes on the bootfs partition alongside user-data.
+# Applied on FIRST BOOT ONLY.
+#
+# Without this the Pi boots but never joins Wi-Fi, so a correctly configured
+# SSH setup is still unreachable.
+
+network:
+  version: 2
+
+  wifis:
+    wlan0:
+      dhcp4: true
+      # false means boot waits for the network. Worth it here — the whole point
+      # of the machine is being reachable.
+      optional: false
+      access-points:
+        # Quote both. YAML treats !, :, # and others as special characters.
+        "YOUR_SSID":
+          password: "YOUR_PASSWORD"
+      # Your country code. Affects legal channel and power limits.
+      regulatory-domain: US

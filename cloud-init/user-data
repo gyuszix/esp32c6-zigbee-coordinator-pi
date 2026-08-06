@@ -1,0 +1,30 @@
+#cloud-config
+
+# Goes on the bootfs partition of a freshly flashed Raspberry Pi OS card.
+# Applied on FIRST BOOT ONLY — mistakes here mean re-flashing.
+
+hostname: zigbee-coordinator
+
+# Blocks password authentication over SSH. Key-only.
+# Independent of the account password below, which exists for sudo.
+ssh_pwauth: false
+
+users:
+- name: YOUR_USERNAME
+  gecos: YOUR_USERNAME
+  # dialout is required for /dev/ttyAMA0 access without sudo.
+  groups: users,adm,dialout,sudo
+  shell: /bin/bash
+
+  # Do NOT use lock_passwd: true without a NOPASSWD sudoers rule. With no
+  # password set, sudo prompts for one that cannot exist and the only fix is
+  # re-flashing the card.
+  #
+  # Generate the hash with:  openssl passwd -6 -stdin
+  # Quote it — it contains $ characters.
+  lock_passwd: false
+  passwd: "$6$REPLACE_WITH_YOUR_HASH"
+
+  # From: cat ~/.ssh/id_ed25519.pub  — one line, no breaks.
+  ssh_authorized_keys:
+  - ssh-ed25519 AAAA... your-key-here

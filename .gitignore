@@ -1,0 +1,14 @@
+# Runtime state — do not commit
+z2m-data/database.db
+z2m-data/database.db.backup
+z2m-data/state.json
+z2m-data/log/
+mosquitto/data/
+log/
+
+# Contains the network key. Keep it backed up somewhere private, not here.
+z2m-data/coordinator_backup.json
+z2m-data/coordinator_backup.json.old
+
+# Firmware binary — fetch from upstream instead
+factory.bin
