@@ -83,6 +83,8 @@ Worst case is roughly 850 mA. A 2A supply has comfortable headroom.
 
 ### Reference photos
 
+
+<img width="864" height="627" alt="Screenshot 2026-08-13 at 23 06 07" src="https://github.com/user-attachments/assets/9af95c97-60c6-4c43-83a9-75e58a482532" />
 <img width="4032" height="3024" alt="IMG_2009" src="https://github.com/user-attachments/assets/52d6dd1a-a3ea-48f6-ab67-63d27a9283b3" />
 <img width="499" height="513" alt="Screenshot 2026-08-06 at 16 46 17" src="https://github.com/user-attachments/assets/f992d5e3-f7ae-45bb-95e3-3161108d121e" />
 <img width="635" height="1142" alt="Screenshot 2026-08-06 at 19 45 24" src="https://github.com/user-attachments/assets/4b8aac27-7ef5-4afb-ba1b-599821c982f4" />
