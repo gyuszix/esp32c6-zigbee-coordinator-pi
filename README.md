@@ -1,7 +1,9 @@
 # ESP32-C6 Zigbee Coordinator on a Raspberry Pi Zero 2 W
 
-A Zigbee2MQTT coordinator built from a generic ESP32-C6 dev board wired to a Pi Zero 2 W
-over the GPIO header UART — no USB dongle, no USB cable between the two boards.
+**Version 0.3** — moved from an ESP32-C6 SuperMini to an ESP32-C6 DevKit.
+
+A Zigbee2MQTT coordinator built from an ESP32-C6 dev board wired to a Pi Zero 2 W over
+the GPIO header UART — no USB dongle, no USB cable between the two boards.
 
 Most Zigbee2MQTT setups use a commercial dongle (Sonoff ZBDongle-P/E, SLZB-06). This one
 uses the ESP32-C6's built-in 802.15.4 radio instead, running
@@ -11,6 +13,19 @@ reason this repo exists.
 
 **Status:** working. Coordinator on channel 25, Zigbee2MQTT + Mosquitto in Docker,
 management UI reachable over Tailscale only.
+
+---
+
+## Version history
+
+- **v0.3** — Switched from an ESP32-C6 SuperMini to an ESP32-C6 DevKit. The SuperMini's
+  GPIO22/23 pins have no dedicated breakout holes on the board edge, which made wiring
+  to the Pi consistently awkward and error-prone. The DevKit breaks out every GPIO to
+  its own labelled header pin, so this is a pure hardware swap — same firmware, same
+  wiring principle, same Pi-side setup. Nothing on the Pi or in Docker changed.
+- **v0.2** — Working coordinator on a SuperMini-style C6 board, Zigbee2MQTT + Mosquitto
+  in Docker, Tailscale-only remote access.
+- **v0.1** — Initial build.
 
 ---
 
@@ -32,56 +47,68 @@ points at the actual cause.
 | Part | Notes |
 |---|---|
 | Raspberry Pi Zero 2 W | 512 MB RAM is enough for Mosquitto + Zigbee2MQTT |
-| ESP32-C6 dev board | Any generic one. This build used a SuperMini-style board |
-| 4 × jumper wires | Power, ground, and the two UART lines |
-| 5 V / 2 A USB supply | Powers the Pi, and the C6 through it |
+| ESP32-C6 DevKit | Any variant with breakout headers works. See [note below](#why-a-devkit-and-not-a-supermini) |
+| 4 x jumper wires | Power, ground, and the two UART lines |
+| 5V / 2A USB supply | Powers the Pi, and the C6 through it |
 | microSD card | 8 GB+ |
 
 The Pi Zero 2 W ships without a soldered GPIO header. You need pins (or wires) on at
 least physical pins 2/4, 6, 8 and 10.
 
+### Why a DevKit and not a SuperMini
+
+The firmware needs GPIO22 and GPIO23 specifically. On SuperMini-style boards these pins
+often aren't broken out to the board edge at all — they're only reachable on tiny
+castellated pads with no dedicated through-hole, which makes soldering a reliable
+connection to them genuinely difficult. A DevKit breaks out every GPIO to its own
+labelled pin header, so GPIO22/23 are just two clearly marked holes you plug jumper
+wires into directly. Nothing else about the setup changes — same firmware, same GPIO
+assignment, same wiring table below.
+
 ### Power budget
 
-The C6 runs off the Pi's 5 V rail, so one supply feeds both. Raspberry Pi publishes no
-current limit for the 5 V header pins — they're fed straight from the Pi's own power
+The C6 runs off the Pi's 5V rail, so one supply feeds both. Raspberry Pi publishes no
+current limit for the 5V header pins — they're fed straight from the Pi's own power
 input, so the real constraint is your PSU.
 
-- Pi Zero 2 W: ~150–350 mA depending on Wi-Fi activity
-- ESP32-C6: ~80–500 mA, peaking during radio transmission
+- Pi Zero 2 W: ~150-350 mA depending on Wi-Fi activity
+- ESP32-C6: ~80-500 mA, peaking during radio transmission
 
-Worst case is roughly 850 mA. A 2 A supply has comfortable headroom.
+Worst case is roughly 850 mA. A 2A supply has comfortable headroom.
 
-Note this is the **5 V** rail. The 3.3 V header pins are a different story — that rail is
-capped around 50 mA total across all GPIO, which is nowhere near enough. Don't power the
-C6 from 3.3 V.
+> **Don't power the C6 from 3.3V.** That's a different rail — capped around 50 mA total
+> across all Pi GPIO, nowhere near enough for the C6.
 
 ---
 
-### References
+### Reference photos
+
 <img width="4032" height="3024" alt="IMG_2009" src="https://github.com/user-attachments/assets/52d6dd1a-a3ea-48f6-ab67-63d27a9283b3" />
 <img width="499" height="513" alt="Screenshot 2026-08-06 at 16 46 17" src="https://github.com/user-attachments/assets/f992d5e3-f7ae-45bb-95e3-3161108d121e" />
 <img width="635" height="1142" alt="Screenshot 2026-08-06 at 19 45 24" src="https://github.com/user-attachments/assets/4b8aac27-7ef5-4afb-ba1b-599821c982f4" />
 
+<!-- IMAGE PLACEHOLDER: ESP32-C6 DevKit pinout diagram -->
+<!-- ![C6 DevKit pinout](docs/c6-devkit-pinout.png) -->
 
 ---
 
 ## Wiring
 
-**Use the pins labelled GPIO22 and GPIO23, not the ones silkscreened TX and RX.**
-
-On many C6 boards these are different pins. The silkscreened TX/RX are the board
-manufacturer's convention; the firmware only listens on GPIO22/23. Wiring to the wrong
-pair produces total silence with no error to explain it.
+> **Use the pins labelled GPIO22 and GPIO23, not any pins silkscreened TX and RX.**
+>
+> On many C6 boards these are different pins. The silkscreened TX/RX are the board
+> manufacturer's convention; the firmware only listens on GPIO22/23. Wiring to the wrong
+> pair produces total silence with no error to explain it.
 
 | Pi (physical pin) | Pi function | ESP32-C6 |
 |---|---|---|
-| 2 or 4 | 5 V | 5 V / VIN |
+| 2 or 4 | 5V | 5V / VIN |
 | 6 | GND | GND |
-| 8 | GPIO14 — TX | **GPIO23** (coordinator RX) |
-| 10 | GPIO15 — RX | **GPIO22** (coordinator TX) |
+| 8 | GPIO14 - TX | **GPIO23** (coordinator RX) |
+| 10 | GPIO15 - RX | **GPIO22** (coordinator TX) |
 
-TX goes to RX. Getting this backwards is the single most common cause of a dead link, and
-it looks identical to every other failure.
+> **TX goes to RX.** Getting this backwards is the single most common cause of a dead
+> link, and it looks identical to every other failure.
 
 Power the Pi down while wiring.
 
@@ -108,10 +135,10 @@ diskutil list                    # find the disk, e.g. disk5
 diskutil mount /dev/disk5s1      # bootfs is the FAT32 partition
 ```
 
-**`lock_passwd: true` will lock you out of `sudo`.** With no password set, `sudo` prompts
-for one that cannot exist, and there's no way to fix it without re-flashing. Either set
-`lock_passwd: false` with a hashed `passwd:` (what this repo does), or add
-`sudo: ALL=(ALL) NOPASSWD:ALL` to the user block.
+> **`lock_passwd: true` will lock you out of `sudo`.** With no password set, `sudo`
+> prompts for one that cannot exist, and there's no way to fix it without re-flashing.
+> Either set `lock_passwd: false` with a hashed `passwd:` (what this repo does), or add
+> `sudo: ALL=(ALL) NOPASSWD:ALL` to the user block.
 
 Generate the hash:
 
@@ -151,7 +178,8 @@ sudo systemctl disable --now serial-getty@ttyAMA0.service
 sudo reboot
 ```
 
-Skipping this step is the failure documented in [Troubleshooting](#zigbee2mqtt-connects-then-times-out-after-30-seconds).
+Skipping this step is the failure documented in
+[Troubleshooting](#zigbee2mqtt-connects-then-times-out-after-30-seconds).
 
 Confirm afterwards:
 
@@ -185,7 +213,7 @@ a 7-byte boot frame, `DE AD 05 00 06 01 8F`. Binary junk on screen is the correc
 
 ### 4. Wire it up
 
-Per the table above, Pi powered off.
+Per the [wiring table](#wiring) above, Pi powered off.
 
 ### 5. Verify the link before touching Docker
 
@@ -201,12 +229,12 @@ Press RESET on the C6 during the capture. You want:
 00000000: dead 0500 0601 8f...
 ```
 
-- **`dead 0500 0601 8f`** — correct. The coordinator is running and reaching the Pi.
-- **`ESP-ROM:esp32c6-...` then nothing** — the ROM bootloader is getting through but the
-  application isn't. Usually means you're on the silkscreened TX/RX pins rather than
-  GPIO22/23.
-- **Nothing at all** — TX/RX crossed, GND missing, or a loose wire.
-- **A stray byte or two** — bad contact. Reseat.
+| Result | Meaning |
+|---|---|
+| `dead 0500 0601 8f` | Correct. The coordinator is running and reaching the Pi. |
+| `ESP-ROM:esp32c6-...` then nothing | ROM bootloader is getting through but the application isn't. Usually means you're on the silkscreened TX/RX pins rather than GPIO22/23. |
+| Nothing at all | TX/RX crossed, GND missing, or a loose wire. |
+| A stray byte or two | Bad contact. Reseat. |
 
 This only proves C6 → Pi. The other direction is proven when Zigbee2MQTT starts cleanly.
 
@@ -254,7 +282,7 @@ z2m: Zigbee2MQTT started!
 
 ## Channel selection
 
-Zigbee channels 11–26 overlap 2.4 GHz Wi-Fi channels 1–11. **25 or 26** sit clear of the
+Zigbee channels 11-26 overlap 2.4 GHz Wi-Fi channels 1-11. **25 or 26** sit clear of the
 common Wi-Fi channels (1, 6, 11) and are a safe default regardless of your router's
 settings — which matters here, since the Pi's Wi-Fi antenna and the C6's Zigbee antenna
 are inches apart.
@@ -271,7 +299,7 @@ SSH is key-only (`ssh_pwauth: false`, key in `user-data`), reachable over both L
 Tailscale.
 
 The Zigbee2MQTT frontend is a different matter — it has **no authentication by default**
-and lets anyone reload it pair devices, remove devices, and see your whole network. Left
+and lets anyone reload it, pair devices, remove devices, and see your whole network. Left
 on `0.0.0.0:8080` it's open to everyone on your Wi-Fi.
 
 This build binds it to the Tailscale interface only:
@@ -311,13 +339,13 @@ they're indistinguishable from the log alone:
 
 1. **`console=serial0,115200` still in `/boot/firmware/cmdline.txt`.** The kernel is using
    the UART as a console, so a second process owns the port. Zigbee2MQTT can open it and
-   write to it, but the frames go nowhere. Remove it, disable
-   `serial-getty@ttyAMA0`, reboot. This one is invisible from the Zigbee2MQTT side and
-   raw `cat /dev/ttyAMA0` still shows inbound data, which makes it deeply misleading.
+   write to it, but the frames go nowhere. Remove it, disable `serial-getty@ttyAMA0`,
+   reboot. This one is invisible from the Zigbee2MQTT side and raw `cat /dev/ttyAMA0`
+   still shows inbound data, which makes it deeply misleading.
 2. **TX/RX not crossed.** Pi TX must reach coordinator RX.
 3. **Wired to the silkscreened TX/RX rather than GPIO22/23.**
 
-Work through them with the raw UART test in step 5.
+Work through them with the raw UART test in [step 5](#5-verify-the-link-before-touching-docker).
 
 ### Channel change refuses to apply
 
@@ -352,7 +380,7 @@ ssh-keygen -R <hostname>.local
 
 ### `sudo` asks for a password that doesn't exist
 
-`lock_passwd: true` with no `passwd:`. Requires re-flashing. See step 1.
+`lock_passwd: true` with no `passwd:`. Requires re-flashing. See [step 1](#1-flash-the-sd-card).
 
 ### Files in `z2m-data` are root-owned
 
