@@ -38,6 +38,8 @@ frontend:
   # auth_token: your-secret-token
 
 homeassistant:
-  enabled: false
+  # Publishes MQTT discovery messages so Home Assistant creates devices
+  # automatically. Required for homeassistant-pi-zigbee.
+  enabled: true
 
 onboarding: false
