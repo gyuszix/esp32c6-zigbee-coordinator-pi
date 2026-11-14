@@ -1,45 +1,25 @@
 version: 5
-
 mqtt:
   base_topic: zigbee2mqtt
-  # NOT localhost. Inside the container localhost is the container itself;
-  # "mosquitto" resolves to the broker via the Compose network.
   server: mqtt://mosquitto:1883
-
 serial:
   port: /dev/ttyAMA0
-  # Mandatory for the ESP32 ZBOSS firmware.
   adapter: zboss
   baudrate: 115200
   rtscts: false
-
 advanced:
   log_level: info
-  # 25 and 26 sit clear of Wi-Fi channels 1/6/11. Changing this after devices
-  # are paired requires re-pairing all of them.
+  log_directories_to_keep: 50
   channel: 25
-  # The C6 has an integrated PA and transmits at up to +20 dBm.
   transmit_power: 20
-
-  # Generated on first run. Replace with your own — do not reuse these.
-  # Changing any of them requires re-pairing all devices.
-  network_key: GENERATE
-  pan_id: GENERATE
-  ext_pan_id: GENERATE
-
+  network_key: "!secret.yaml network_key"
+  pan_id: "!secret.yaml pan_id"
+  ext_pan_id: "!secret.yaml ext_pan_id"
   enable_external_js: false
-
 frontend:
-  # The generated default may be false, which leaves you stuck on onboarding.
   enabled: true
   port: 8080
-  # No authentication by default. Either bind the port to a private interface
-  # in docker-compose.yml, or set an auth_token here.
-  # auth_token: your-secret-token
-
 homeassistant:
-  # Publishes MQTT discovery messages so Home Assistant creates devices
-  # automatically. Required for homeassistant-pi-zigbee.
   enabled: true
-
 onboarding: false
+devices: devices.yaml

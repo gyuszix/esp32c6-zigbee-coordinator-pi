@@ -12,3 +12,7 @@ z2m-data/coordinator_backup.json.old
 
 # Firmware binary — fetch from upstream instead
 factory.bin
+.env
+z2m-data/secret.yaml
+z2m-data/devices.yaml
+*.bak

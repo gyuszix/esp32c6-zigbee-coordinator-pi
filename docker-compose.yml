@@ -9,7 +9,7 @@ services:
     # Zigbee2MQTT doesn't use this port (it connects over the Compose network);
     # Home Assistant connects to this Tailscale address.
     ports:
-      - "100.x.x.x:1883:1883"
+      - "${TS_IP:?set TS_IP in .env}:1883:1883"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
@@ -22,10 +22,9 @@ services:
     depends_on:
       - mosquitto
     # Bound to the Pi's own Tailscale IP so the unauthenticated admin UI is not
-    # reachable from the LAN. Replace with your address, or use "8080:8080" to
-    # expose it on all interfaces.
+    # expose it on all interfaces. env_file should have your specs
     ports:
-      - "100.x.x.x:8080:8080"
+      - "${TS_IP:?set TS_IP in .env}:8080:8080"
     volumes:
       - ./z2m-data:/app/data
     # Passes the Pi's hardware UART into the container. Without this the
