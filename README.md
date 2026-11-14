@@ -10,8 +10,8 @@ as a ZBOSS NCP.
 
 ## Version history
 
-- **v0.4** — Host-specific values moved to gitignored `.env`, `secret.yaml`, `devices.yaml`.
-  Repo clones straight onto the Pi. `log_directories_to_keep: 50`.
+- **v0.4** — Tailscale IP, network key and paired devices moved to gitignored `.env`,
+  `secret.yaml`, `devices.yaml`. Repo clones straight onto the Pi. `log_directories_to_keep: 50`.
 - **v0.3** — SuperMini → DevKit (SuperMini doesn't break out GPIO22/23 properly).
 - **v0.2** — Working build on a SuperMini.
 - **v0.1** — Initial build.
@@ -108,8 +108,14 @@ sudo usermod -aG docker $USER    # log out and back in
 git clone https://github.com/gyuszix/esp32c6-zigbee-coordinator-pi.git ~/zigbee
 cd ~/zigbee
 echo "TS_IP=$(tailscale ip -4)" > .env
-python3 -c "import secrets as s; print(f'network_key: {list(s.token_bytes(16))}\npan_id: {s.randbelow(0xFFFE)+1}\next_pan_id: {list(s.token_bytes(8))}')" > z2m-data/secret.yaml
+python3 -c "import secrets as s; print(f'network_key: {list(s.token_bytes(16))}')" > z2m-data/secret.yaml
 echo '{}' > z2m-data/devices.yaml
+```
+
+Before first start, set `pan_id` and `ext_pan_id` in `configuration.yaml` to your own
+random values. Don't reuse the ones in this repo. Then:
+
+```bash
 docker compose up -d && docker compose logs -f zigbee2mqtt
 ```
 
@@ -118,7 +124,7 @@ Look for `Zigbee2MQTT started!`. Update later with `git pull && docker compose u
 | Gitignored file | Holds |
 | --- | --- |
 | `.env` | `TS_IP`. Compose refuses to start without it |
-| `z2m-data/secret.yaml` | Network key, PAN IDs. **Back this up.** Lose it and you re-pair everything |
+| `z2m-data/secret.yaml` | Network key. **Back this up.** Lose it and you re-pair everything |
 | `z2m-data/devices.yaml` | Paired devices |
 
 ## Config notes
@@ -126,6 +132,8 @@ Look for `Zigbee2MQTT started!`. Update later with `git pull && docker compose u
 - `server: mqtt://mosquitto:1883` — not `localhost` (that's the container itself).
 - `adapter: zboss` — mandatory.
 - `channel: 25` — clear of Wi-Fi 1/6/11. Changing it later means re-pairing everything.
+- `pan_id` / `ext_pan_id` — plain values, not `!secret`. Z2M rejects secret refs for these,
+  and they're broadcast in every beacon anyway. Only `network_key` is actually secret.
 - `frontend` and broker are bound to `TS_IP` only. The frontend has no auth.
 
 ## Troubleshooting
